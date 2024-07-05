@@ -2,6 +2,7 @@ package Diya.StudentManagementSystem;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -164,12 +165,14 @@ public class App {
                     break;
 
                 case 100:
-                    // Import student data from JSON file into database
                     try {
                         StudentModel[] students = JsonToJavaObj.readJsonFile(filePath);
-                        for (StudentModel student : students) {
-                            System.out.println(student.getSrNo());
+                        int totalStudents = students.length;
+                        for (int i = 0; i < totalStudents; i++) {
+                            StudentModel student = students[i];
                             StudentDAO.insertStudentFromJson(student);
+                            // Display loading bar
+                            printLoadingBar(i + 1, totalStudents);
                         }
                         System.out.println("\nData inserted successfully.\n");
                     } catch (IOException | SQLException e) {
@@ -192,5 +195,24 @@ public class App {
     private static void printTableRow(String[] row) {
         System.out.format("| %-10s | %-20s | %-15s | %-30s | %-10s | %-30s | %-20s |\n",
                 row[0], row[1], row[2], row[3], row[4], row[5], row[6]);
+    }
+
+    /**
+     * Utility method to print a loading bar with progress percentage.
+     *
+     * @param current Current progress.
+     * @param total   Total number of progress.
+     */
+    public static void printLoadingBar(int current, int total) {
+        int barLength = 50;
+        int progress = (int) ((current * 1.0 / total) * barLength);
+        char[] bar = new char[barLength];
+        Arrays.fill(bar, 0, progress, '=');
+        Arrays.fill(bar, progress, barLength, ' ');
+
+        System.out.print("\r[" + new String(bar) + "] " + current + "/" + total + " students processed");
+        if (current == total) {
+            System.out.println(); // Move to the next line when done
+        }
     }
 }
